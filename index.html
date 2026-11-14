@@ -1,546 +1,1094 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" id="themeColor" content="#f5f6f8">
-  <title>Nge-JAV 🇯🇵</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" id="themeColor" content="#ffffff">
+<title>Nge-JAV</title>
 
-  <!-- Anti-FOUC: set theme sebelum CSS di-parse -->
-  <script>
-    (function () {
-      var theme;
-      try { theme = localStorage.getItem('ngejav-theme'); } catch (e) {}
-      if (theme !== 'light' && theme !== 'dark') {
-        theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark' : 'light';
-      }
-      document.documentElement.dataset.theme = theme;
-      var meta = document.getElementById('themeColor');
-      if (meta) meta.content = theme === 'dark' ? '#14181f' : '#f5f6f8';
-    })();
-  </script>
+<script>
+(function () {
+  var theme = null;
+  var age = null;
+  try {
+    theme = localStorage.getItem('ngejav-theme');
+    age = localStorage.getItem('ngejav-age');
+  } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+  if (age === '1') document.documentElement.dataset.age = 'ok';
+  var meta = document.getElementById('themeColor');
+  if (meta) meta.content = theme === 'dark' ? '#0e0e0e' : '#ffffff';
+})();
+</script>
 
-  <style>
-    /* ============ Reset ============ */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    /* ============ Theme Variables ============ */
-    :root {
-      color-scheme: light;
-      --bg:             #f5f6f8;
-      --text:           #1e2430;
-      --muted:          #626b7a;
-      --border:         #d8dde5;
-      --error:          #b3261e;
-      --banner-bg:      #1e2430;
-      --banner-text:    #f5f6f8;
-      --banner-border:  rgba(255, 255, 255, 0.22);
-      --banner-hover:   rgba(255, 255, 255, 0.10);
-      --placeholder:    #a6aebd;
-      --btn-hover-bg:   #1e2430;
-      --btn-hover-text: #f5f6f8;
-      --video-bg:       #000000;
-    }
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --fg: #111111;
+  --muted: #7a7a7a;
+  --line: #e5e5e5;
+  --hover: #f5f5f5;
+  --danger: #d23b3b;
+  --radius: 10px;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
 
-    [data-theme="dark"] {
-      color-scheme: dark;
-      --bg:             #14181f;
-      --text:           #dfe3ea;
-      --muted:          #7d8794;
-      --border:         #2a303a;
-      --error:          #f28b82;
-      --banner-bg:      #0d1015;
-      --banner-text:    #dfe3ea;
-      --banner-border:  rgba(255, 255, 255, 0.22);
-      --banner-hover:   rgba(255, 255, 255, 0.10);
-      --placeholder:    #4e5665;
-      --btn-hover-bg:   #dfe3ea;
-      --btn-hover-text: #14181f;
-      --video-bg:       #000000;
-    }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e0e0e;
+  --fg: #f0f0f0;
+  --muted: #8a8a8a;
+  --line: #262626;
+  --hover: #1a1a1a;
+  --danger: #ff6b6b;
+}
 
-    /* ============ Base ============ */
-    html {
-      min-height: 100%;
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
-    }
+html,
+body {
+  height: 100%;
+}
 
-    body {
-      min-height: 100vh;
-      min-height: 100dvh;
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
 
-      display: grid;
-      place-content: center;
+button,
+input {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+}
 
-      padding:
-        calc(96px + env(safe-area-inset-top, 0px))
-        calc(24px + env(safe-area-inset-right, 0px))
-        calc(24px + env(safe-area-inset-bottom, 0px))
-        calc(24px + env(safe-area-inset-left, 0px));
+button {
+  cursor: pointer;
+}
 
-      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-      font-size: 14px;
-      line-height: 1.5;
-      background: var(--bg);
-      color: var(--text);
-      transition: background-color 0.2s ease, color 0.2s ease;
-    }
+button:disabled {
+  cursor: default;
+}
 
-    button, input {
-      font-family: inherit;
-      -webkit-tap-highlight-color: transparent;
-    }
+a {
+  color: inherit;
+}
 
-    /* ============ Banner ============ */
-    .banner {
-      position: fixed;
-      inset: 0 0 auto 0;
-      z-index: 10;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      padding:
-        calc(18px + env(safe-area-inset-top, 0px))
-        calc(24px + env(safe-area-inset-right, 0px))
-        18px
-        calc(24px + env(safe-area-inset-left, 0px));
-      background: var(--banner-bg);
-      color: var(--banner-text);
-      transition: background-color 0.2s ease, color 0.2s ease;
-    }
+svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
 
-    .banner-title {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-width: 0;
-    }
+.hidden {
+  display: none !important;
+}
 
-    .theme-toggle {
-      flex-shrink: 0;
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      display: grid;
-      place-items: center;
-      background: transparent;
-      border: 1px solid var(--banner-border);
-      border-radius: 4px;
-      color: var(--banner-text);
-      cursor: pointer;
-      transition: background-color 0.15s ease, border-color 0.15s ease;
-    }
-    .theme-toggle:hover {
-      background: var(--banner-hover);
-      border-color: rgba(255, 255, 255, 0.45);
-    }
-    .theme-toggle:focus-visible {
-      outline: 2px solid var(--banner-text);
-      outline-offset: 2px;
-    }
+:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
 
-    .theme-toggle svg {
-      width: 16px;
-      height: 16px;
-      display: none;
-    }
-    [data-theme="light"] .icon-sun  { display: block; }
-    [data-theme="dark"]  .icon-moon { display: block; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 
-    /* ============ Wrap ============ */
-    .wrap {
-      width: 100%;
-      max-width: 640px;
-    }
+html:not([data-age="ok"]) main,
+html:not([data-age="ok"]) header,
+html:not([data-age="ok"]) footer {
+  visibility: hidden;
+}
 
-    /* ============ Search View ============ */
-    #searchView { text-align: left; }
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  place-items: center;
+  padding: 20px;
+  background: var(--bg);
+}
 
-    .field-label {
-      display: block;
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
+html:not([data-age="ok"]) .gate {
+  display: grid;
+}
 
-    form {
-      display: flex;
-      gap: 12px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
-      margin-bottom: 16px;
-      transition: border-color 0.2s ease;
-    }
-    form:focus-within {
-      border-bottom-color: var(--text);
-    }
+.gate-box {
+  width: 100%;
+  max-width: 360px;
+}
 
-    input[type="text"] {
-      flex: 1;
-      min-width: 0;
-      padding: 6px 0;
-      background: transparent;
-      border: 0;
-      outline: 0;
-      color: var(--text);
-      font-size: 20px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      caret-color: var(--text);
-    }
-    input[type="text"]::placeholder {
-      color: var(--placeholder);
-      text-transform: none;
-      letter-spacing: 0;
-    }
+.gate-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
 
-    button[type="submit"],
-    .back {
-      padding: 8px 16px;
-      background: transparent;
-      border: 1px solid var(--text);
-      border-radius: 0;
-      color: var(--text);
-      font-size: 12px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    }
-    button[type="submit"]:hover,
-    .back:hover {
-      background: var(--btn-hover-bg);
-      color: var(--btn-hover-text);
-    }
-    button[type="submit"]:focus-visible,
-    .back:focus-visible {
-      outline: 2px solid var(--text);
-      outline-offset: 2px;
-    }
+.gate-text {
+  margin-top: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  color: var(--muted);
+}
 
-    .error {
-      color: var(--error);
-      font-size: 13px;
-      min-height: 20px;
-    }
+.gate-actions {
+  display: grid;
+  gap: 8px;
+}
 
-    /* ============ Video View ============ */
-    #videoView { width: 100%; }
+.btn {
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity .15s ease, background-color .15s ease;
+}
 
-    .meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      transition: border-color 0.2s ease, color 0.2s ease;
-    }
+.btn-solid {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
 
-    .meta .code {
-      color: var(--text);
-      font-size: 13px;
-      letter-spacing: 0.08em;
-      overflow-wrap: anywhere;
-      min-width: 0;
-    }
+.btn-solid:hover {
+  opacity: .85;
+}
 
-    .frame {
-      position: relative;
-      aspect-ratio: 16 / 9;
-      background: var(--video-bg);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      transition: border-color 0.2s ease;
-    }
-    .frame iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
-    }
+.btn-plain:hover {
+  background: var(--hover);
+}
 
-    .back { margin-top: 20px; }
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: env(safe-area-inset-top, 0px) calc(20px + env(safe-area-inset-right, 0px)) 0 calc(20px + env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid var(--line);
+}
 
-    /* ============ Utility ============ */
-    .hidden { display: none; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
 
-    /* ============ Motion ============ */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-      }
-    }
+.flag {
+  width: 22px;
+  height: 15px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
 
-    /* ============ Responsive (≤640px) ============ */
-    @media (max-width: 640px) {
-      body {
-        padding:
-          calc(88px + env(safe-area-inset-top, 0px))
-          calc(20px + env(safe-area-inset-right, 0px))
-          calc(24px + env(safe-area-inset-bottom, 0px))
-          calc(20px + env(safe-area-inset-left, 0px));
-      }
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
 
-      .banner {
-        padding:
-          calc(16px + env(safe-area-inset-top, 0px))
-          calc(20px + env(safe-area-inset-right, 0px))
-          16px
-          calc(20px + env(safe-area-inset-left, 0px));
-      }
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  color: var(--muted);
+  transition: background-color .15s ease, color .15s ease;
+}
 
-      .banner-title { font-size: 15px; letter-spacing: 0.18em; }
+.icon-btn:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
 
-      input[type="text"] { font-size: 16px; }
+:root[data-theme="light"] .icon-moon,
+:root[data-theme="dark"] .icon-sun {
+  display: none;
+}
 
-      button[type="submit"],
-      .back {
-        padding: 12px 18px;
-      }
-    }
-  </style>
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  transition: max-width .2s ease;
+}
+
+main > section {
+  width: 100%;
+}
+
+main.wide {
+  max-width: min(1200px, calc((100vh - 166px) * 16 / 9));
+  max-width: min(1200px, calc((100dvh - 166px) * 16 / 9));
+}
+
+.search {
+  position: relative;
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 6px 0 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: border-color .15s ease;
+}
+
+.search-form:focus-within {
+  border-color: var(--fg);
+}
+
+.search-form > svg {
+  color: var(--muted);
+}
+
+#searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-family: var(--mono);
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  outline: 0;
+  caret-color: var(--fg);
+}
+
+#searchInput::placeholder {
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font);
+}
+
+.submit {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--fg);
+  color: var(--bg);
+  transition: opacity .15s ease;
+}
+
+.submit:hover {
+  opacity: .85;
+}
+
+.submit:disabled {
+  opacity: .4;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--line);
+  border-top-color: var(--fg);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 7px;
+  font-family: var(--mono);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggestion.active {
+  background: var(--hover);
+}
+
+.suggestion-code {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.suggestion-code mark {
+  background: none;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.suggestion-domain {
+  flex-shrink: 0;
+  max-width: 45%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+  margin-top: 12px;
+  padding: 0 4px;
+  font-size: 14px;
+  color: var(--danger);
+}
+
+.error:empty {
+  display: none;
+}
+
+.error svg {
+  width: 16px;
+  height: 16px;
+}
+
+.player-head {
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.player-code {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.frame-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+  transition: opacity .25s ease;
+  pointer-events: none;
+}
+
+.frame-loading.done {
+  opacity: 0;
+}
+
+.frame-loading .spinner {
+  width: 26px;
+  height: 26px;
+  border-color: #333;
+  border-top-color: #fff;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.footer .flag {
+  width: 16px;
+  height: 11px;
+}
+
+@media (max-width: 640px) {
+  main {
+    justify-content: flex-start;
+    padding: 16px 12px 24px;
+  }
+
+  main.wide {
+    max-width: 100%;
+  }
+
+  #searchInput {
+    font-size: 16px;
+  }
+
+  .player-code {
+    font-size: 15px;
+  }
+
+  .gate-box {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
 </head>
 <body>
 
-<header class="banner">
-  <span class="banner-title">Nge-JAV 🇯🇵</span>
-  <button
-    class="theme-toggle"
-    id="themeToggle"
-    type="button"
-    title="Ganti tema"
-    aria-label="Ganti tema">
-    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="4"></circle>
-      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+<div class="gate" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="gateTitle" aria-describedby="gateText">
+  <div class="gate-box">
+    <h1 class="gate-title" id="gateTitle">Konten dewasa</h1>
+    <p class="gate-text" id="gateText">Situs ini berisi konten untuk dewasa. Lanjutkan hanya jika kamu berusia 18 tahun atau lebih.</p>
+    <div class="gate-actions">
+      <button type="button" class="btn btn-solid" id="ageConfirm">Saya berusia 18 tahun atau lebih</button>
+      <button type="button" class="btn btn-plain" id="ageExit">Keluar</button>
+    </div>
+  </div>
+</div>
+
+<header class="header">
+  <div class="brand">
+    <svg class="flag" viewBox="0 0 3 2" preserveAspectRatio="none" aria-hidden="true">
+      <rect width="3" height="2" fill="#ffffff"/>
+      <circle cx="1.5" cy="1" r="0.6" fill="#bc002d"/>
     </svg>
-    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+    <h1 class="title">Nge-JAV</h1>
+  </div>
+  <button class="icon-btn" id="themeToggle" type="button" aria-label="Ganti tema" title="Ganti tema">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+    </svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
     </svg>
   </button>
 </header>
 
-<div class="wrap">
-
-  <section id="searchView">
-    <label class="field-label" for="searchInput">Masukkan code</label>
-
-    <form id="searchForm" autocomplete="off">
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="ABC123"
-        spellcheck="false"
-        autofocus>
-      <button type="submit">Cari</button>
-    </form>
-
-    <p class="error" id="error" role="status" aria-live="polite"></p>
+<main id="wrap">
+  <section id="searchView" aria-label="Pencarian">
+    <div class="search" id="searchBox">
+      <form class="search-form" id="searchForm" role="search" autocomplete="off">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="m20 20-3.5-3.5"/>
+        </svg>
+        <label for="searchInput" class="sr-only">Kode video</label>
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Masukkan kode"
+          spellcheck="false"
+          autocapitalize="characters"
+          autocomplete="off"
+          autocorrect="off"
+          maxlength="64"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="suggestions"
+          aria-expanded="false"
+          aria-describedby="error">
+        <button type="submit" class="submit" id="submitBtn" aria-label="Cari">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </form>
+      <div class="suggestions hidden" id="suggestions" role="listbox" aria-label="Saran kode"></div>
+    </div>
+    <p class="error" id="error" role="alert"></p>
   </section>
 
-  <section id="videoView" class="hidden">
-    <div class="meta">
-      <span>Sedang diputar</span>
-      <span class="code" id="codeDisplay"></span>
+  <section id="videoView" class="hidden" aria-label="Pemutar video">
+    <div class="player-head">
+      <button class="icon-btn" id="backBtn" type="button" aria-label="Kembali ke pencarian" title="Kembali">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <span class="player-code" id="codeDisplay"></span>
+      <a class="icon-btn" id="openExternal" href="#" target="_blank" rel="noopener noreferrer" aria-label="Buka di tab baru" title="Buka di tab baru">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <path d="M15 3h6v6"/>
+          <path d="M10 14 21 3"/>
+        </svg>
+      </a>
     </div>
+
     <div class="frame">
-      <iframe
-        id="videoFrame"
-        title="Video player"
-        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-        allowfullscreen></iframe>
+      <iframe id="videoFrame" title="Pemutar video"
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowfullscreen></iframe>
+      <div class="frame-loading" id="frameLoading" aria-hidden="true">
+        <div class="spinner"></div>
+      </div>
     </div>
-    <button type="button" class="back" id="backBtn">← Kembali</button>
   </section>
+</main>
 
-</div>
+<footer class="footer">
+  <svg class="flag" viewBox="0 0 3 2" preserveAspectRatio="none" aria-hidden="true">
+    <rect width="3" height="2" fill="#ffffff"/>
+    <circle cx="1.5" cy="1" r="0.6" fill="#bc002d"/>
+  </svg>
+  <span id="copyright"></span>
+</footer>
 
 <script>
+(function () {
   'use strict';
 
   const CONFIG = Object.freeze({
-    dataUrl:    'code.json',
-    themeKey:   'ngejav-theme',
-    themeColor: { light: '#f5f6f8', dark: '#14181f' },
+    dataUrl: 'code.json',
+    themeKey: 'ngejav-theme',
+    ageKey: 'ngejav-age',
+    exitUrl: 'https://www.google.com',
+    themeColor: Object.freeze({ light: '#ffffff', dark: '#0e0e0e' }),
+    maxSuggestions: 8,
+    maxCodeLength: 64,
+    maxUrlLength: 2048,
+    fetchTimeoutMs: 10000,
+    frameFallbackMs: 8000,
+    allowedProtocols: Object.freeze(['https:']),
+    sandbox: 'allow-scripts allow-same-origin allow-presentation allow-forms',
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    baseTitle: 'Nge-JAV',
   });
 
+  const $ = (id) => document.getElementById(id);
+
   const dom = {
-    searchView:     document.getElementById('searchView'),
-    videoView:      document.getElementById('videoView'),
-    searchForm:     document.getElementById('searchForm'),
-    searchInput:    document.getElementById('searchInput'),
-    errorEl:        document.getElementById('error'),
-    videoFrame:     document.getElementById('videoFrame'),
-    codeDisplay:    document.getElementById('codeDisplay'),
-    backBtn:        document.getElementById('backBtn'),
-    themeToggle:    document.getElementById('themeToggle'),
-    themeColorMeta: document.getElementById('themeColor'),
+    ageGate: $('ageGate'),
+    ageConfirm: $('ageConfirm'),
+    ageExit: $('ageExit'),
+    searchView: $('searchView'),
+    searchBox: $('searchBox'),
+    searchForm: $('searchForm'),
+    searchInput: $('searchInput'),
+    submitBtn: $('submitBtn'),
+    suggestions: $('suggestions'),
+    error: $('error'),
+    wrap: $('wrap'),
+    videoView: $('videoView'),
+    videoFrame: $('videoFrame'),
+    frameLoading: $('frameLoading'),
+    codeDisplay: $('codeDisplay'),
+    backBtn: $('backBtn'),
+    openExternal: $('openExternal'),
+    themeToggle: $('themeToggle'),
+    themeMeta: $('themeColor'),
+    copyright: $('copyright'),
   };
+
+  if (Object.values(dom).some((el) => !el)) {
+    console.error('[Nge-JAV] Elemen DOM tidak lengkap.');
+    return;
+  }
+
+  dom.videoFrame.setAttribute('sandbox', CONFIG.sandbox);
+  dom.videoFrame.referrerPolicy = CONFIG.referrerPolicy;
+  dom.copyright.textContent = '© ' + new Date().getFullYear() + ' Nge-JAV';
 
   const state = {
-    entries:     [],
-    loadStatus:  'pending', // 'pending' | 'ready' | 'error'
+    entries: [],
+    byCode: new Map(),
+    loadStatus: 'pending',
     isVideoOpen: false,
+    matches: [],
+    activeIndex: -1,
   };
 
-  /* ============ Theme ============ */
-  function applyTheme(theme) {
+  let loadPromise = null;
+  let frameTimer = null;
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function isAgeConfirmed() {
+    return document.documentElement.dataset.age === 'ok';
+  }
+
+  function confirmAge() {
+    try { localStorage.setItem(CONFIG.ageKey, '1'); } catch (e) {}
+    document.documentElement.dataset.age = 'ok';
+    loadEntries();
+    dom.searchInput.focus();
+  }
+
+  function exitSite() {
+    window.location.replace(CONFIG.exitUrl);
+  }
+
+  function currentTheme() {
+    return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+  }
+
+  function setTheme(theme) {
     const next = theme === 'dark' ? 'dark' : 'light';
     document.documentElement.dataset.theme = next;
-    if (dom.themeColorMeta) dom.themeColorMeta.content = CONFIG.themeColor[next];
-    try { localStorage.setItem(CONFIG.themeKey, next); } catch (e) { /* private mode */ }
+    dom.themeMeta.content = CONFIG.themeColor[next];
+    try { localStorage.setItem(CONFIG.themeKey, next); } catch (e) {}
   }
 
-  function toggleTheme() {
-    const current = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
-    applyTheme(current === 'dark' ? 'light' : 'dark');
-  }
-
-  /* ============ Data ============ */
-  async function loadEntries() {
-    state.loadStatus = 'pending';
+  function isAllowedUrl(value) {
+    if (typeof value !== 'string' || value.length > CONFIG.maxUrlLength) return false;
     try {
-      const res = await fetch(CONFIG.dataUrl, { cache: 'no-cache' });
-      if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
-
-      const data = await res.json();
-      if (!Array.isArray(data)) throw new Error('Format data tidak valid (harus array).');
-
-      state.entries = data.filter(isValidEntry);
-      state.loadStatus = 'ready';
-    } catch (err) {
-      state.loadStatus = 'error';
-      console.error('[Nge-JAV] Gagal memuat data:', err);
-    }
-  }
-
-  function isValidEntry(item) {
-    return (
-      item !== null &&
-      typeof item === 'object' &&
-      typeof item.code === 'string' && item.code.trim() !== '' &&
-      typeof item.url === 'string'  && isValidHttpUrl(item.url)
-    );
-  }
-
-  function isValidHttpUrl(value) {
-    try {
-      const url = new URL(value);
-      return url.protocol === 'http:' || url.protocol === 'https:';
+      return CONFIG.allowedProtocols.includes(new URL(value).protocol);
     } catch (e) {
       return false;
     }
   }
 
-  function findEntry(rawCode) {
-    const needle = rawCode.trim().toLowerCase();
-    return state.entries.find(e => e.code.toLowerCase() === needle);
+  function isValidEntry(item) {
+    return item !== null &&
+      typeof item === 'object' &&
+      typeof item.code === 'string' &&
+      item.code.trim() !== '' &&
+      item.code.length <= CONFIG.maxCodeLength &&
+      isAllowedUrl(item.url);
   }
 
-  /* ============ View ============ */
-  function setError(message) {
-    dom.errorEl.textContent = message;
+  function getDomain(url) {
+    try {
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function buildIndex(list) {
+    state.entries = list;
+    state.byCode = new Map();
+    for (const entry of list) {
+      const key = entry.code.trim().toLowerCase();
+      if (state.byCode.has(key)) {
+        console.warn('[Nge-JAV] Kode duplikat diabaikan:', entry.code);
+        continue;
+      }
+      state.byCode.set(key, entry);
+    }
+  }
+
+  function loadEntries() {
+    if (state.loadStatus === 'ready') return Promise.resolve();
+    if (loadPromise) return loadPromise;
+
+    state.loadStatus = 'pending';
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), CONFIG.fetchTimeoutMs);
+
+    loadPromise = (async () => {
+      try {
+        const res = await fetch(CONFIG.dataUrl, {
+          cache: 'no-cache',
+          credentials: 'omit',
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('Format data tidak valid.');
+        buildIndex(data.filter(isValidEntry));
+        state.loadStatus = 'ready';
+      } catch (err) {
+        state.loadStatus = 'error';
+        console.error('[Nge-JAV] Gagal memuat data:', err);
+      } finally {
+        clearTimeout(timer);
+        loadPromise = null;
+      }
+    })();
+
+    return loadPromise;
+  }
+
+  function findEntry(raw) {
+    return state.byCode.get(raw.trim().toLowerCase());
+  }
+
+  function findMatches(query) {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    const starts = [];
+    const contains = [];
+    for (const entry of state.entries) {
+      const code = entry.code.toLowerCase();
+      if (code.startsWith(q)) starts.push(entry);
+      else if (code.includes(q)) contains.push(entry);
+      if (starts.length >= CONFIG.maxSuggestions) break;
+    }
+    return starts.concat(contains).slice(0, CONFIG.maxSuggestions);
+  }
+
+  function makeSvg(paths, strokeWidth) {
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', strokeWidth || '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    svg.setAttribute('aria-hidden', 'true');
+    paths.forEach((d) => {
+      const p = document.createElementNS(SVG_NS, 'path');
+      p.setAttribute('d', d);
+      svg.append(p);
+    });
+    return svg;
+  }
+
+  function makeArrowIcon() {
+    return makeSvg(['M5 12h14', 'M12 5l7 7-7 7'], '2');
+  }
+
+  function makeAlertIcon() {
+    const svg = makeSvg(['M12 8v4', 'M12 16h.01'], '2');
+    const circle = document.createElementNS(SVG_NS, 'circle');
+    circle.setAttribute('cx', '12');
+    circle.setAttribute('cy', '12');
+    circle.setAttribute('r', '10');
+    svg.prepend(circle);
+    return svg;
+  }
+
+  function setLoading(isLoading) {
+    dom.submitBtn.disabled = isLoading;
+    dom.submitBtn.replaceChildren();
+    if (isLoading) {
+      const spinner = document.createElement('span');
+      spinner.className = 'spinner';
+      dom.submitBtn.append(spinner);
+    } else {
+      dom.submitBtn.append(makeArrowIcon());
+    }
+  }
+
+  function setError(msg) {
+    dom.error.replaceChildren();
+    if (!msg) return;
+    dom.error.append(makeAlertIcon(), document.createTextNode(msg));
+  }
+
+  function hideFrameLoading() {
+    dom.frameLoading.classList.add('done');
+  }
+
+  function isSuggestionsOpen() {
+    return !dom.suggestions.classList.contains('hidden');
+  }
+
+  function hideSuggestions() {
+    state.matches = [];
+    state.activeIndex = -1;
+    dom.suggestions.replaceChildren();
+    dom.suggestions.classList.add('hidden');
+    dom.searchInput.setAttribute('aria-expanded', 'false');
+    dom.searchInput.removeAttribute('aria-activedescendant');
   }
 
   function showSearchView() {
     state.isVideoOpen = false;
-    dom.videoFrame.src = '';
+    clearTimeout(frameTimer);
+    dom.videoFrame.src = 'about:blank';
     dom.videoView.classList.add('hidden');
     dom.searchView.classList.remove('hidden');
+    dom.wrap.classList.remove('wide');
     dom.searchInput.value = '';
     setError('');
+    hideSuggestions();
+    document.title = CONFIG.baseTitle;
     dom.searchInput.focus();
   }
 
   function showVideoView(entry) {
+    hideSuggestions();
     state.isVideoOpen = true;
-    dom.videoFrame.src = entry.url;
+
+    dom.frameLoading.classList.remove('done');
     dom.codeDisplay.textContent = entry.code;
+    dom.openExternal.href = entry.url;
+    document.title = entry.code + ' · ' + CONFIG.baseTitle;
+
     dom.searchView.classList.add('hidden');
     dom.videoView.classList.remove('hidden');
+    dom.wrap.classList.add('wide');
+
+    clearTimeout(frameTimer);
+    frameTimer = setTimeout(hideFrameLoading, CONFIG.frameFallbackMs);
+    dom.videoFrame.src = entry.url;
+    dom.backBtn.focus();
   }
 
-  /* ============ Handlers ============ */
+  function highlightMatch(parent, text, query) {
+    const lower = text.toLowerCase();
+    const q = query.trim().toLowerCase();
+    const idx = lower.indexOf(q);
+    if (idx === -1 || lower.length !== text.length) {
+      parent.textContent = text;
+      return;
+    }
+    parent.append(
+      document.createTextNode(text.slice(0, idx)),
+      Object.assign(document.createElement('mark'), {
+        textContent: text.slice(idx, idx + q.length),
+      }),
+      document.createTextNode(text.slice(idx + q.length))
+    );
+  }
+
+  function renderSuggestions(query) {
+    state.matches = findMatches(query);
+    state.activeIndex = -1;
+    dom.suggestions.replaceChildren();
+
+    if (state.matches.length === 0) {
+      hideSuggestions();
+      return;
+    }
+
+    state.matches.forEach((entry, i) => {
+      const item = document.createElement('div');
+      item.id = 'suggestion-' + i;
+      item.className = 'suggestion';
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', 'false');
+
+      const codeSpan = document.createElement('span');
+      codeSpan.className = 'suggestion-code';
+      highlightMatch(codeSpan, entry.code, query);
+
+      const domainSpan = document.createElement('span');
+      domainSpan.className = 'suggestion-domain';
+      domainSpan.textContent = getDomain(entry.url);
+
+      item.append(codeSpan, domainSpan);
+      item.addEventListener('mousedown', (e) => e.preventDefault());
+      item.addEventListener('click', () => showVideoView(entry));
+      dom.suggestions.appendChild(item);
+    });
+
+    dom.suggestions.classList.remove('hidden');
+    dom.searchInput.setAttribute('aria-expanded', 'true');
+  }
+
+  function updateActiveSuggestion() {
+    const items = dom.suggestions.children;
+    Array.from(items).forEach((el, i) => {
+      const on = i === state.activeIndex;
+      el.classList.toggle('active', on);
+      el.setAttribute('aria-selected', String(on));
+    });
+    const active = items[state.activeIndex];
+    if (active) {
+      active.scrollIntoView({ block: 'nearest' });
+      dom.searchInput.setAttribute('aria-activedescendant', active.id);
+    } else {
+      dom.searchInput.removeAttribute('aria-activedescendant');
+    }
+  }
+
+  function moveActive(step) {
+    const count = state.matches.length;
+    if (!count) return;
+    state.activeIndex = (state.activeIndex + step + count) % count;
+    updateActiveSuggestion();
+  }
+
+  function handleInput() {
+    if (state.loadStatus !== 'ready') return;
+    const query = dom.searchInput.value;
+    if (!query.trim()) {
+      hideSuggestions();
+      setError('');
+      return;
+    }
+    renderSuggestions(query);
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
 
     const raw = dom.searchInput.value.trim();
     if (!raw) {
-      setError('Masukkan code terlebih dahulu.');
+      setError('Masukkan kode terlebih dahulu.');
+      dom.searchInput.focus();
       return;
     }
 
-    if (state.loadStatus === 'pending') {
-      setError('Data masih dimuat, tunggu sebentar.');
-      return;
-    }
-
-    if (state.loadStatus === 'error') {
-      setError('Memuat ulang data...');
+    if (state.loadStatus !== 'ready') {
+      setLoading(true);
       await loadEntries();
+      setLoading(false);
       if (state.loadStatus !== 'ready') {
-        setError('Data gagal dimuat. Coba refresh halaman.');
+        setError('Data gagal dimuat. Muat ulang halaman.');
         return;
       }
-      setError('');
     }
 
     const entry = findEntry(raw);
     if (!entry) {
-      setError('Code "' + raw.toUpperCase() + '" tidak ditemukan.');
+      setError('Kode "' + raw.toUpperCase() + '" tidak ditemukan.');
       return;
     }
-
     showVideoView(entry);
   }
 
-  function handleKeydown(event) {
+  function handleInputKeydown(event) {
+    if (event.key === 'ArrowDown' && isSuggestionsOpen()) {
+      event.preventDefault();
+      moveActive(1);
+    } else if (event.key === 'ArrowUp' && isSuggestionsOpen()) {
+      event.preventDefault();
+      moveActive(-1);
+    } else if (event.key === 'Enter' && state.activeIndex >= 0) {
+      event.preventDefault();
+      showVideoView(state.matches[state.activeIndex]);
+    } else if (event.key === 'Escape' && isSuggestionsOpen()) {
+      event.stopPropagation();
+      hideSuggestions();
+    }
+  }
+
+  function handleGlobalKeydown(event) {
+    if (!isAgeConfirmed()) return;
     if (event.key === 'Escape') {
-      if (state.isVideoOpen) {
-        showSearchView();
-      } else if (document.activeElement === dom.searchInput) {
-        dom.searchInput.blur();
-      }
+      if (state.isVideoOpen) showSearchView();
+      else if (document.activeElement === dom.searchInput) dom.searchInput.blur();
       return;
     }
-
-    const isTyping = document.activeElement === dom.searchInput;
-    if (event.key === '/' && !isTyping && !state.isVideoOpen) {
+    const typing = document.activeElement === dom.searchInput ||
+      (event.target && /^(INPUT|TEXTAREA)$/.test(event.target.tagName));
+    if (event.key === '/' && !typing && !state.isVideoOpen) {
       event.preventDefault();
       dom.searchInput.focus();
     }
   }
 
-  /* ============ Init ============ */
-  dom.themeToggle.addEventListener('click', toggleTheme);
+  dom.ageConfirm.addEventListener('click', confirmAge);
+  dom.ageExit.addEventListener('click', exitSite);
+
+  dom.themeToggle.addEventListener('click', () => {
+    setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  });
+
   dom.searchForm.addEventListener('submit', handleSubmit);
   dom.backBtn.addEventListener('click', showSearchView);
-  document.addEventListener('keydown', handleKeydown);
 
-  loadEntries();
+  dom.videoFrame.addEventListener('load', () => {
+    if (!state.isVideoOpen) return;
+    clearTimeout(frameTimer);
+    hideFrameLoading();
+  });
+
+  dom.searchInput.addEventListener('input', handleInput);
+  dom.searchInput.addEventListener('keydown', handleInputKeydown);
+  dom.searchInput.addEventListener('focus', () => {
+    if (state.loadStatus === 'ready' && dom.searchInput.value.trim()) handleInput();
+  });
+
+  dom.searchBox.addEventListener('focusout', (event) => {
+    if (!dom.searchBox.contains(event.relatedTarget)) hideSuggestions();
+  });
+
+  document.addEventListener('keydown', handleGlobalKeydown);
+
+  if (isAgeConfirmed()) {
+    loadEntries();
+  } else {
+    dom.ageConfirm.focus();
+  }
+})();
 </script>
-
 </body>
 </html>
