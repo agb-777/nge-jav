@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" id="themeColor" content="#f5f6f8">
+  <title>Nge-JAV 🇯🇵</title>
+
+  <!-- Anti-FOUC: set theme sebelum CSS di-parse -->
+  <script>
+    (function () {
+      var theme;
+      try { theme = localStorage.getItem('ngejav-theme'); } catch (e) {}
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark' : 'light';
+      }
+      document.documentElement.dataset.theme = theme;
+      var meta = document.getElementById('themeColor');
+      if (meta) meta.content = theme === 'dark' ? '#14181f' : '#f5f6f8';
+    })();
+  </script>
+
+  <style>
+    /* ============ Reset ============ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ============ Theme Variables ============ */
+    :root {
+      color-scheme: light;
+      --bg:             #f5f6f8;
+      --text:           #1e2430;
+      --muted:          #626b7a;
+      --border:         #d8dde5;
+      --error:          #b3261e;
+      --banner-bg:      #1e2430;
+      --banner-text:    #f5f6f8;
+      --banner-border:  rgba(255, 255, 255, 0.22);
+      --banner-hover:   rgba(255, 255, 255, 0.10);
+      --placeholder:    #a6aebd;
+      --btn-hover-bg:   #1e2430;
+      --btn-hover-text: #f5f6f8;
+      --video-bg:       #000000;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg:             #14181f;
+      --text:           #dfe3ea;
+      --muted:          #7d8794;
+      --border:         #2a303a;
+      --error:          #f28b82;
+      --banner-bg:      #0d1015;
+      --banner-text:    #dfe3ea;
+      --banner-border:  rgba(255, 255, 255, 0.22);
+      --banner-hover:   rgba(255, 255, 255, 0.10);
+      --placeholder:    #4e5665;
+      --btn-hover-bg:   #dfe3ea;
+      --btn-hover-text: #14181f;
+      --video-bg:       #000000;
+    }
+
+    /* ============ Base ============ */
+    html {
+      min-height: 100%;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+
+      display: grid;
+      place-content: center;
+
+      padding:
+        calc(96px + env(safe-area-inset-top, 0px))
+        calc(24px + env(safe-area-inset-right, 0px))
+        calc(24px + env(safe-area-inset-bottom, 0px))
+        calc(24px + env(safe-area-inset-left, 0px));
+
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    button, input {
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ============ Banner ============ */
+    .banner {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding:
+        calc(18px + env(safe-area-inset-top, 0px))
+        calc(24px + env(safe-area-inset-right, 0px))
+        18px
+        calc(24px + env(safe-area-inset-left, 0px));
+      background: var(--banner-bg);
+      color: var(--banner-text);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .banner-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    .theme-toggle {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      border: 1px solid var(--banner-border);
+      border-radius: 4px;
+      color: var(--banner-text);
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .theme-toggle:hover {
+      background: var(--banner-hover);
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--banner-text);
+      outline-offset: 2px;
+    }
+
+    .theme-toggle svg {
+      width: 16px;
+      height: 16px;
+      display: none;
+    }
+    [data-theme="light"] .icon-sun  { display: block; }
+    [data-theme="dark"]  .icon-moon { display: block; }
+
+    /* ============ Wrap ============ */
+    .wrap {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    /* ============ Search View ============ */
+    #searchView { text-align: left; }
+
+    .field-label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    form {
+      display: flex;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s ease;
+    }
+    form:focus-within {
+      border-bottom-color: var(--text);
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 6px 0;
+      background: transparent;
+      border: 0;
+      outline: 0;
+      color: var(--text);
+      font-size: 20px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      caret-color: var(--text);
+    }
+    input[type="text"]::placeholder {
+      color: var(--placeholder);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    button[type="submit"],
+    .back {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--text);
+      border-radius: 0;
+      color: var(--text);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    button[type="submit"]:hover,
+    .back:hover {
+      background: var(--btn-hover-bg);
+      color: var(--btn-hover-text);
+    }
+    button[type="submit"]:focus-visible,
+    .back:focus-visible {
+      outline: 2px solid var(--text);
+      outline-offset: 2px;
+    }
+
+    .error {
+      color: var(--error);
+      font-size: 13px;
+      min-height: 20px;
+    }
+
+    /* ============ Video View ============ */
+    #videoView { width: 100%; }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .meta .code {
+      color: var(--text);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      overflow-wrap: anywhere;
+      min-width: 0;
+    }
+
+    .frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: var(--video-bg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+    .frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .back { margin-top: 20px; }
+
+    /* ============ Utility ============ */
+    .hidden { display: none; }
+
+    /* ============ Motion ============ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+
+    /* ============ Responsive (≤640px) ============ */
+    @media (max-width: 640px) {
+      body {
+        padding:
+          calc(88px + env(safe-area-inset-top, 0px))
+          calc(20px + env(safe-area-inset-right, 0px))
+          calc(24px + env(safe-area-inset-bottom, 0px))
+          calc(20px + env(safe-area-inset-left, 0px));
+      }
+
+      .banner {
+        padding:
+          calc(16px + env(safe-area-inset-top, 0px))
+          calc(20px + env(safe-area-inset-right, 0px))
+          16px
+          calc(20px + env(safe-area-inset-left, 0px));
+      }
+
+      .banner-title { font-size: 15px; letter-spacing: 0.18em; }
+
+      input[type="text"] { font-size: 16px; }
+
+      button[type="submit"],
+      .back {
+        padding: 12px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="banner">
+  <span class="banner-title">Nge-JAV 🇯🇵</span>
+  <button
+    class="theme-toggle"
+    id="themeToggle"
+    type="button"
+    title="Ganti tema"
+    aria-label="Ganti tema">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+    </svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+    </svg>
+  </button>
+</header>
+
+<div class="wrap">
+
+  <section id="searchView">
+    <label class="field-label" for="searchInput">Masukkan code</label>
+
+    <form id="searchForm" autocomplete="off">
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="ABC123"
+        spellcheck="false"
+        autofocus>
+      <button type="submit">Cari</button>
+    </form>
+
+    <p class="error" id="error" role="status" aria-live="polite"></p>
+  </section>
+
+  <section id="videoView" class="hidden">
+    <div class="meta">
+      <span>Sedang diputar</span>
+      <span class="code" id="codeDisplay"></span>
+    </div>
+    <div class="frame">
+      <iframe
+        id="videoFrame"
+        title="Video player"
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        allowfullscreen></iframe>
+    </div>
+    <button type="button" class="back" id="backBtn">← Kembali</button>
+  </section>
+
+</div>
+
+<script>
+  'use strict';
+
+  const CONFIG = Object.freeze({
+    dataUrl:    'code.json',
+    themeKey:   'ngejav-theme',
+    themeColor: { light: '#f5f6f8', dark: '#14181f' },
+  });
+
+  const dom = {
+    searchView:     document.getElementById('searchView'),
+    videoView:      document.getElementById('videoView'),
+    searchForm:     document.getElementById('searchForm'),
+    searchInput:    document.getElementById('searchInput'),
+    errorEl:        document.getElementById('error'),
+    videoFrame:     document.getElementById('videoFrame'),
+    codeDisplay:    document.getElementById('codeDisplay'),
+    backBtn:        document.getElementById('backBtn'),
+    themeToggle:    document.getElementById('themeToggle'),
+    themeColorMeta: document.getElementById('themeColor'),
+  };
+
+  const state = {
+    entries:     [],
+    loadStatus:  'pending', // 'pending' | 'ready' | 'error'
+    isVideoOpen: false,
+  };
+
+  /* ============ Theme ============ */
+  function applyTheme(theme) {
+    const next = theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = next;
+    if (dom.themeColorMeta) dom.themeColorMeta.content = CONFIG.themeColor[next];
+    try { localStorage.setItem(CONFIG.themeKey, next); } catch (e) { /* private mode */ }
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  }
+
+  /* ============ Data ============ */
+  async function loadEntries() {
+    state.loadStatus = 'pending';
+    try {
+      const res = await fetch(CONFIG.dataUrl, { cache: 'no-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+
+      const data = await res.json();
+      if (!Array.isArray(data)) throw new Error('Format data tidak valid (harus array).');
+
+      state.entries = data.filter(isValidEntry);
+      state.loadStatus = 'ready';
+    } catch (err) {
+      state.loadStatus = 'error';
+      console.error('[Nge-JAV] Gagal memuat data:', err);
+    }
+  }
+
+  function isValidEntry(item) {
+    return (
+      item !== null &&
+      typeof item === 'object' &&
+      typeof item.code === 'string' && item.code.trim() !== '' &&
+      typeof item.url === 'string'  && isValidHttpUrl(item.url)
+    );
+  }
+
+  function isValidHttpUrl(value) {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function findEntry(rawCode) {
+    const needle = rawCode.trim().toLowerCase();
+    return state.entries.find(e => e.code.toLowerCase() === needle);
+  }
+
+  /* ============ View ============ */
+  function setError(message) {
+    dom.errorEl.textContent = message;
+  }
+
+  function showSearchView() {
+    state.isVideoOpen = false;
+    dom.videoFrame.src = '';
+    dom.videoView.classList.add('hidden');
+    dom.searchView.classList.remove('hidden');
+    dom.searchInput.value = '';
+    setError('');
+    dom.searchInput.focus();
+  }
+
+  function showVideoView(entry) {
+    state.isVideoOpen = true;
+    dom.videoFrame.src = entry.url;
+    dom.codeDisplay.textContent = entry.code;
+    dom.searchView.classList.add('hidden');
+    dom.videoView.classList.remove('hidden');
+  }
+
+  /* ============ Handlers ============ */
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError('');
+
+    const raw = dom.searchInput.value.trim();
+    if (!raw) {
+      setError('Masukkan code terlebih dahulu.');
+      return;
+    }
+
+    if (state.loadStatus === 'pending') {
+      setError('Data masih dimuat, tunggu sebentar.');
+      return;
+    }
+
+    if (state.loadStatus === 'error') {
+      setError('Memuat ulang data...');
+      await loadEntries();
+      if (state.loadStatus !== 'ready') {
+        setError('Data gagal dimuat. Coba refresh halaman.');
+        return;
+      }
+      setError('');
+    }
+
+    const entry = findEntry(raw);
+    if (!entry) {
+      setError('Code "' + raw.toUpperCase() + '" tidak ditemukan.');
+      return;
+    }
+
+    showVideoView(entry);
+  }
+
+  function handleKeydown(event) {
+    if (event.key === 'Escape') {
+      if (state.isVideoOpen) {
+        showSearchView();
+      } else if (document.activeElement === dom.searchInput) {
+        dom.searchInput.blur();
+      }
+      return;
+    }
+
+    const isTyping = document.activeElement === dom.searchInput;
+    if (event.key === '/' && !isTyping && !state.isVideoOpen) {
+      event.preventDefault();
+      dom.searchInput.focus();
+    }
+  }
+
+  /* ============ Init ============ */
+  dom.themeToggle.addEventListener('click', toggleTheme);
+  dom.searchForm.addEventListener('submit', handleSubmit);
+  dom.backBtn.addEventListener('click', showSearchView);
+  document.addEventListener('keydown', handleKeydown);
+
+  loadEntries();
+</script>
+
+</body>
+</html>
