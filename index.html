@@ -204,6 +204,12 @@ html:not([data-age="ok"]) .gate {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  text-decoration: none;
+  border-radius: var(--radius);
+}
+
+.brand:hover .title {
+  opacity: .75;
 }
 
 .flag {
@@ -217,6 +223,7 @@ html:not([data-age="ok"]) .gate {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
+  transition: opacity .15s ease;
 }
 
 .icon-btn {
@@ -538,13 +545,13 @@ main.wide {
 </div>
 
 <header class="header">
-  <div class="brand">
+  <a class="brand" id="homeLink" href="#" aria-label="Nge-JAV, kembali ke pencarian">
     <svg class="flag" viewBox="0 0 3 2" preserveAspectRatio="none" aria-hidden="true">
       <rect width="3" height="2" fill="#ffffff"/>
       <circle cx="1.5" cy="1" r="0.6" fill="#bc002d"/>
     </svg>
-    <h1 class="title">Nge-JAV</h1>
-  </div>
+    <span class="title">Nge-JAV</span>
+  </a>
   <button class="icon-btn" id="themeToggle" type="button" aria-label="Ganti tema" title="Ganti tema">
     <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="4"/>
@@ -653,6 +660,7 @@ main.wide {
     ageGate: $('ageGate'),
     ageConfirm: $('ageConfirm'),
     ageExit: $('ageExit'),
+    homeLink: $('homeLink'),
     searchView: $('searchView'),
     searchBox: $('searchBox'),
     searchForm: $('searchForm'),
@@ -890,6 +898,12 @@ main.wide {
     dom.searchInput.focus();
   }
 
+  function handleHomeClick(event) {
+    event.preventDefault();
+    if (!isAgeConfirmed()) return;
+    showSearchView();
+  }
+
   function showVideoView(entry) {
     hideSuggestions();
     state.isVideoOpen = true;
@@ -1057,6 +1071,7 @@ main.wide {
 
   dom.ageConfirm.addEventListener('click', confirmAge);
   dom.ageExit.addEventListener('click', exitSite);
+  dom.homeLink.addEventListener('click', handleHomeClick);
 
   dom.themeToggle.addEventListener('click', () => {
     setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
